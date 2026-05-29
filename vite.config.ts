@@ -11,7 +11,9 @@ import IconsResolver from "unplugin-icons/resolver";
 
 // https://vite.dev/config/
 export default defineConfig({
-    plugins: [ vue(), tailwindcss(),
+    plugins: [
+        vue(),
+        tailwindcss(),
         Components({
             resolvers: [
                 IconsResolver(),
@@ -27,13 +29,13 @@ export default defineConfig({
             resolvers: [ IconsResolver({ prefix: "Icon" }) ]
         })
     ],
-    server: {
-        port: 3000,
-        host: true
-    },
     resolve: {
         alias: {
             "@": fileURLToPath(new URL("./src", import.meta.url))
         }
+    },
+    server: {
+        host: true,
+        port: 3000
     }
 });

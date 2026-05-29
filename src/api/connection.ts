@@ -1,23 +1,15 @@
 import toastEventBus from "primevue/toasteventbus";
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig, ResponseType } from "axios";
-import axios, { AxiosRequestConfig } from "axios";
-import { userDataConfig } from "@/store/loginStore/storeUserData";
-import { abortAllRequests, getAbortSignal } from "@/hooks/composable/abortManager.ts";
+import axios, { type AxiosRequestConfig } from "axios";
+import { userDataConfig } from "@/store/layout/storeUserData";
+import { abortAllRequests, getAbortSignal } from "@/composables/abortManager.ts";
 import { pinia } from "@/pinia.ts";
 import { format, isValid, parseISO } from "date-fns";
 import { authChannel } from "@/api/authChannel.ts";
 
 // Base URL taken from an environment variable
-let baseURL: string = import.meta.env.VITE_TS_VUE_API;
+let baseURL: string = import.meta.env.VITE_API_URL;
 export const axiosInstance = axios.create({ baseURL });
-// use for requests that do not require sending it with the token, such as a refresh or an external get to the same backend server url
-export const authClient = axios.create({ baseURL: import.meta.env.VITE_TS_VUE_API });
-let isRefreshing = false;
-let failedQueue: {
-    resolve: (value?: AxiosResponse | PromiseLike<AxiosResponse>) => void;
-    reject: (reason?: any) => void;
-    config: AxiosRequestConfig;
-}[] = [];
 
 const ISO_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$/;
 
@@ -59,15 +51,14 @@ function isFormData(data: any): data is FormData {
  * Axios request interceptor
  * Automatically injects Authorization headers using token from store
  */
-axiosInstance.interceptors.request.use(
-    async(conf: InternalAxiosRequestConfig) => {
+axiosInstance.interceptors.request.use((conf: InternalAxiosRequestConfig) => {
         const storeUser = userDataConfig(pinia);
-        const token = storeUser.userData;
+        const token = storeUser.userData?.token;
 
-        if (token.access) {
-            conf.headers.authorization = `Bearer ${ token.access }`;
+        if (token) {
+            conf.headers.authorization = `Bearer ${ token }`;
         } else {
-            conf.headers.authorization = "";
+            delete conf.headers.authorization;
         }
 
         if (conf.params) conf.params = normalizeDates(conf.params);
@@ -76,74 +67,8 @@ axiosInstance.interceptors.request.use(
         }
 
         return conf;
-    },
-    async(error) => await Promise.reject(error)
+    }, (error) => Promise.reject(error)
 );
-
-/**
- * Processes the failedQueue by iterating over each item and resolving or rejecting based on the provided error or token.
- *
- * @param {any} error - The error object used to reject the promises in the queue.
- * @param {string | null} [token=null] - An optional token used to update the Authorization header in the config for the requests.
- * @return {void} This function does not return a value.
- */
-export function processQueue(error: any, token: string | null = null): void {
-    failedQueue.forEach(({ resolve, reject, config }) => {
-        if (error) {
-            reject(error);
-        } else {
-            if (token && config.headers) {
-                config.headers["Authorization"] = `Bearer ${ token }`;
-            }
-            resolve(axiosInstance(config));
-        }
-    });
-    failedQueue = [];
-}
-
-function shouldAttemptRefresh(error: AxiosError, originalRequest: any): boolean {
-    const status = error.response?.status;
-    const isLoginOrPublic = originalRequest?.url?.includes("/api/login/");
-    return status === 401 && !originalRequest._retry && !isLoginOrPublic;
-}
-
-async function handleTokenRefresh(originalRequest: any, error: AxiosError) {
-    const storeUserInfo = userDataConfig(pinia);
-
-    originalRequest._retry = true;
-
-    if ( !storeUserInfo.userData?.refresh) {
-        await storeUserInfo.logout();
-        return Promise.reject(error);
-    }
-
-    if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-            failedQueue.push({ resolve, reject, config: originalRequest });
-        });
-    }
-
-    isRefreshing = true;
-
-    try {
-        const newAccessToken = await storeUserInfo.refresh();
-        authChannel.postMessage({ type: "REFRESHED", token: newAccessToken.access, refresh: newAccessToken.refresh });
-
-        if (originalRequest.headers) originalRequest.headers["Authorization"] = `Bearer ${ newAccessToken.access }`;
-        processQueue(null, newAccessToken.access);
-        return axiosInstance(originalRequest);
-    } catch (refreshError: any) {
-        authChannel.postMessage({ type: "REFRESH_FAILED" });
-        processQueue(refreshError, null);
-        abortAllRequests();
-
-        await storeUserInfo.logout();
-        await handleServerError("Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.");
-        return Promise.reject(refreshError);
-    } finally {
-        isRefreshing = false;
-    }
-}
 
 authChannel.onmessage = (event) => {
     const storeUserInfo = userDataConfig(pinia);
@@ -151,8 +76,7 @@ authChannel.onmessage = (event) => {
     if (token) {
         storeUserInfo.userData = {
             ...storeUserInfo.userData,
-            access: token,
-            refresh: refresh?? storeUserInfo.userData.refresh
+            token: refresh ?? storeUserInfo.userData.token
         };
         axiosInstance.defaults.headers["Authorization"] = `Bearer ${ token }`;
     }
@@ -160,7 +84,11 @@ authChannel.onmessage = (event) => {
 
 async function handleServerSideError(error: AxiosError) {
     try {
-        const contentType = error.response?.headers["content-type"];
+        const headerContentType = error.response?.headers["content-type"];
+        const contentType = typeof headerContentType === "string"
+                            ? headerContentType : Array.isArray(headerContentType)
+                                                  ? headerContentType.join("; ") : "";
+
         const data = error.response?.data;
 
         if (data && contentType?.includes("application/json")) {
@@ -205,19 +133,20 @@ async function handleServerSideError(error: AxiosError) {
  * - Handles cases where the refresh token is absent or expired by logging the user out.
  * - Processes server error responses with specific handling for JSON payloads and network errors.
  */
-axiosInstance.interceptors.response.use(
-    (response) => response,
-    async(error: AxiosError): Promise<any> => {
-        const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
-
-        if (shouldAttemptRefresh(error, originalRequest)) {
-            return handleTokenRefresh(originalRequest, error);
-        }
-
-        await handleServerSideError(error);
+axiosInstance.interceptors.response.use((response) => response, async(error: AxiosError) => {
+    const storeUserInfo = userDataConfig(pinia);
+    const status = error.response?.status;
+    // @ts-ignore
+    if (status === 403 && error.response?.data?.error !== "Forbidden") {
+        abortAllRequests();
+        await storeUserInfo.logout();
+        showToast("warn", "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
         return Promise.reject(error);
     }
-);
+
+    await handleServerSideError(error);
+    return Promise.reject(error);
+});
 
 /**
  * Handles various server-side error response formats
@@ -384,41 +313,5 @@ async function Patch(props: ApiProps<any>): Promise<{ response: AxiosResponse }>
     }
 }
 
-/**
- * External GET request to fetch a currency rate list by route suffix
- * Uses public SUNAT API
- *
- * @example
- * await Api.getChangeList({ route: "?date=2025-04?skip=1" });
- */
-async function getChangeList(props: ApiProps<any>): Promise<{ response: AxiosResponse }> {
-    try {
-        const response = await axios.get(`https://sunatrateapi.tsifactur.com/api/rate/list${ props.route }`, {
-            params: props.params
-        });
-
-        return { response };
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
-}
-
-/**
- * External GET request to fetch the latest currency rate
- *
- * @example
- * const { response } = await Api.getRateLast();
- */
-async function getRateLast(): Promise<{ response: AxiosResponse }> {
-    try {
-        const response = await axios.get(`https://sunatrateapi.tsifactur.com/api/rate/last`);
-        return { response };
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
-}
-
 // Exporting API methods
-export const Api = { Get, Post, Put, Destroy, Patch, getChangeList, getRateLast };
+export const Api = { Get, Post, Put, Destroy, Patch };

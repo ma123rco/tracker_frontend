@@ -1,49 +1,70 @@
 <script setup lang="ts">
+import { Api } from "@/api/connection.ts";
+import { userDataConfig } from "@/store/layout/storeUserData.ts";
 import { ref } from "vue";
-import ValidateFormItem from "@/components/formItem/ValidateFormItem.vue";
+import { useForm } from "vee-validate";
+import { castFormErrors } from "@/composables/castFormErrors.ts";
+import type { InterfaceUserLoginActions } from "@/types/settings/InterfaceLogin.ts";
+import * as yup from "yup";
 
 const refPassword = ref();
 const loading = ref(false);
+const useUserData = userDataConfig();
+
+const schemaValidate = yup.object({
+    password: yup.string().required("Ingrese su contraseña").label("password").min(3, "Ingresa al menos 3 caracteres"),
+    username: yup.string().required("Ingrese su usuario").label("username").min(3, "Ingresa al menos 3 caracteres")
+});
+
+const { handleSubmit, values } = useForm<{ password: string; username: string; }>({ validationSchema: schemaValidate });
+
+const onLogin = handleSubmit(async(values) => {
+    loading.value = true;
+    try {
+        const { response }: InterfaceUserLoginActions = await Api.Post({ route: "users/login", data: { ...values } });
+        if (response && response.status === 200) {
+            await useUserData.loginUserData(response.data);
+            loading.value = false;
+        }
+    } catch (e) {
+        console.log(e);
+        loading.value = false;
+    }
+}, ({ errors }) => castFormErrors(errors));
+
+const focusPassword = () => {
+    if (values.password.trim()) onLogin();
+    else refPassword.value.$el.querySelector("input").focus();
+};
 
 </script>
 
 <template>
-
     <div class="flex min-h-screen items-center justify-center p-2 bg-primary-100 dark:bg-slate-900 overflow-hidden">
         <div class="z-10 w-full max-w-md rounded-2xl bg-white/70 dark:bg-gray-900/70  backdrop-blur-2xl backdrop-saturate-150 border border-white/20 dark:border-white/10 p-6 sm:p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)]">
 
-            <div class="mb-6 flex justify-center">
-                <img src="@/assets/logo.svg" class="h-16 sm:h-20 object-contain" alt="logo" />
+            <div class="mb-2 flex justify-center">
+                <img src="../../assets/astomgas/logo-alt.jpeg" class="h-36 object-contain" alt="logo"/>
             </div>
 
-            <h2 class="text-center text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
-                Iniciar sesión
-            </h2>
-
-            <p class="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
-                Ingresa tus credenciales
-            </p>
+            <p class="text-center text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 dark:text-white"> Iniciar sesión </p>
+            <p class="mt-1 text-center text-sm text-gray-500 dark:text-gray-400"> Ingresa tus credenciales </p>
 
             <div class="align-items-form mt-6" v-focustrap>
-
-                <ValidateFormItem name="username" span="12" label="Usuario" mark v-slot="{ value, handleBlur, handleChange, error }">
+                <ValidateFormItem name="username" span="12" label="Usuario" mark v-slot="{ value, handleChange, error }">
                     <InputText :model-value="value" fluid placeholder="Ingrese su usuario" id="username" autofocus aria-label="Usuario"
-                               :invalid="!!error" @blur="handleBlur"/>
+                               :invalid="!!error" @update:model-value="handleChange" @keyup.enter="focusPassword"/>
                 </ValidateFormItem>
 
-                <ValidateFormItem name="password" span="12" label="Contraseña" mark v-slot="{ value, handleBlur, handleChange, error }">
+                <ValidateFormItem name="password" span="12" label="Contraseña" mark v-slot="{ value, handleChange, error }">
                     <Password inputClass="w-full" :feedback="false" :model-value="value" :invalid="!!error" fluid ref="refPassword"
-                              id="password" aria-label="Contraseña" @blur="handleBlur" toggleMask input-id="password" panel-id="password"
-                              @update:model-value="handleChange" placeholder="********"/>
+                              id="password" ariaLabel="Contraseña" toggleMask inputId="password" panelId="password"
+                              @keyup.enter="onLogin" @update:model-value="handleChange" placeholder="********"/>
                 </ValidateFormItem>
                 <div class="max-cols-12">
-                    <Button label="Iniciar Sesión" fluid :disabled="loading" :loading>
-                        <template #icon>
-                            <i-ic-baseline-log-in class="absolute right-2 order-1 h-7 w-7"/>
-                        </template>
-                        <template #loadingicon>
-                            <i-svg-spinners-ring-resize class="absolute right-2 order-1 h-7 w-7"/>
-                        </template>
+                    <Button label="Iniciar Sesión" fluid :loading @click="onLogin"
+                            :pt="{ loadingIcon: { class: 'absolute right-2 order-1 h-7 w-7' } }" #icon>
+                        <i-material-symbols-switch-access-shortcut class="absolute right-2 order-1 h-7 w-7"/>
                     </Button>
                 </div>
             </div>
@@ -51,7 +72,6 @@ const loading = ref(false);
     </div>
 
     <svg viewBox="0 0 1600 800" class="pointer-events-none fixed inset-0 h-screen w-screen" preserveAspectRatio="none">
-
         <rect class="fill-primary-500 dark:fill-surface-900" fill="var(--p-primary-500)" width="1600" height="800"/>
         <path class="fill-primary-400 dark:fill-surface-800" fill="var(--p-primary-400)"
               d="M478.4 581c3.2 0.8 6.4 1.7 9.5 2.5c196.2 52.5 388.7 133.5 593.5 176.6c174.2 36.6 349.5 29.2 518.6-10.2V0H0v574.9c52.3-17.6 106.5-27.7 161.1-30.9C268.4 537.4 375.7 554.2 478.4 581z"/>

@@ -1,7 +1,10 @@
 /* Use @import */
+@import "./webPageStyle.css";
 @layer theme, base, components, utilities;
 @import "tailwindcss";
-@import "@/assets/primevue/tailwind.css";
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind utilities;
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -13,42 +16,80 @@
     url('@/assets/fonts/Poppins-Medium.ttf') format('truetype');
 }
 
-.html, body {
-    font: inherit;
+html {
     font-size: 14px;
+    line-height: normal;
     font-family: 'Poppins', Arial, serif;
+}
+
+body {
+    margin: 0;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
     font-weight: normal;
-    font-style: normal;
 }
 
 @theme {
-    --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
-    --color-primary-50: #ecfdf5;
-    --color-primary-100: #d1fae5;
-    --color-primary-200: #a7f3d0;
-    --color-primary-300: #6ee7b7;
-    --color-primary-400: #34d399;
-    --color-primary-500: #10b981;
-    --color-primary-600: #059669;
-    --color-primary-700: #047857;
-    --color-primary-800: #065f46;
-    --color-primary-900: #064e3b;
-    --color-primary-950: #022c22;
+    --font-display: "Poppins", ui-sans-serif, system-ui, sans-serif;
+    --color-primary-50: #FFF7ED;
+    --color-primary-100: #FFEDD5;
+    --color-primary-200: #FED7AA;
+    --color-primary-300: #FDBA74;
+    --color-primary-400: #FB923C;
+    --color-primary-500: #F97316;
+    --color-primary-600: #EA580C;
+    --color-primary-700: #C2410C;
+    --color-primary-800: #9A3412;
+    --color-primary-900: #7C2D12;
+    --color-primary-950: #431407;
 
-    --color-surface-0: #ffffff;
-    --color-surface-50: #fafafa;
-    --color-surface-100: #f4f4f5;
-    --color-surface-200: #e4e4e7;
-    --color-surface-300: #d4d4d8;
-    --color-surface-400: #a1a1aa;
-    --color-surface-500: #71717a;
-    --color-surface-600: #52525b;
-    --color-surface-700: #3f3f46;
-    --color-surface-800: #27272a;
-    --color-surface-900: #18181b;
-    --color-surface-950: #09090b;
+    --color-surface-0: #FFFFFF;
+    --color-surface-50: #F9FAFB;
+    --color-surface-100: #F3F4F6;
+    --color-surface-200: #E5E7EB;
+    --color-surface-300: #D1D5DB;
+    --color-surface-400: #9CA3AF;
+    --color-surface-500: #6B7280;
+    --color-surface-600: #4B5563;
+    --color-surface-700: #374151;
+    --color-surface-800: #1F2937;
+    --color-surface-900: #111827;
+    --color-surface-950: #03070F;
     --p-content-border-radius: 6px;
     --p-popover-arrow-left: 10px;
+
+    /* Brand */
+    --color-primary: oklch(0.6 0.15 250);
+
+    /* Backgrounds */
+    --color-bg-section: oklch(0.97 0.01 250);
+    --color-bg-section-dark: oklch(0.2 0.02 250);
+
+    /* Text */
+    --color-text-title: oklch(0.2 0.02 250);
+    --color-text-body: oklch(0.5 0.02 250);
+    --color-text-muted: oklch(0.65 0.02 250);
+
+    /* Card */
+    --color-card: oklch(1 0 0);
+    --color-card-dark: oklch(0.25 0.02 250);
+
+    --color-hero-overlay: oklch(0.2 0.02 250 / 0.7);
+    --color-hero-overlay-dark: oklch(0.1 0.02 250 / 0.8);
+    --hero-image-filter: none;
+
+    --color-text-hero: oklch(0.98 0 0);
+    --color-text-hero-muted: oklch(0.85 0.02 250);
+}
+
+.dark {
+    --color-bg-section: oklch(0.2 0.02 250);
+    --color-text-title: oklch(0.98 0 0);
+    --color-text-body: oklch(0.65 0.02 250);
+    --color-card: oklch(0.25 0.02 250);
+    --color-hero-overlay: oklch(0.1 0.02 250 / 0.8);
+    --hero-image-filter: brightness(0.3);
 }
 
 @media (prefers-color-scheme: light) {
@@ -103,8 +144,16 @@
     }
 }
 
-.clear-button-autocomplete {
-    @apply absolute right-12 bg-surface-100 dark:bg-surface-500 rounded top-2/3 transform -translate-y-1/2 cursor-pointer text-xl
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease;
+    will-change: transform;
+}
+
+.reveal-active {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .view-card-route {
@@ -149,7 +198,7 @@
 }
 
 .align-buttons-submit {
-    @apply mt-4 flex items-center justify-center space-x-1;
+    @apply flex items-center justify-center gap-3;
 }
 
 .view-card {

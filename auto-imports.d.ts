@@ -6,5 +6,19 @@
 // biome-ignore lint: disable
 export {}
 declare global {
-
+  const IconMaterialSymbolsCalendarMonth: typeof import('~icons/material-symbols/calendar-month').default
+  const IconMaterialSymbolsChatBubble: typeof import('~icons/material-symbols/chat-bubble').default
+  const IconMaterialSymbolsCommentRounded: typeof import('~icons/material-symbols/comment-rounded').default
+  const IconMaterialSymbolsDashboardOutlineRounded: typeof import('~icons/material-symbols/dashboard-outline-rounded').default
+  const IconMaterialSymbolsEngineeringOutlineRounded: typeof import('~icons/material-symbols/engineering-outline-rounded').default
+  const IconMaterialSymbolsInboxTextAsteriskOutline: typeof import('~icons/material-symbols/inbox-text-asterisk-outline').default
+  const IconMaterialSymbolsMobileArrowRightOutline: typeof import('~icons/material-symbols/mobile-arrow-right-outline').default
+  const IconMaterialSymbolsPartlyCloudyNightRounded: typeof import('~icons/material-symbols/partly-cloudy-night-rounded').default
+  const IconMaterialSymbolsPasswordRounded: typeof import('~icons/material-symbols/password-rounded').default
+  const IconMaterialSymbolsPhoneEnabled: typeof import('~icons/material-symbols/phone-enabled').default
+  const IconMaterialSymbolsPieChart: typeof import('~icons/material-symbols/pie-chart').default
+  const IconMaterialSymbolsPivotTableChartRounded: typeof import('~icons/material-symbols/pivot-table-chart-rounded').default
+  const IconMaterialSymbolsShieldOutlineRounded: typeof import('~icons/material-symbols/shield-outline-rounded').default
+  const IconMaterialSymbolsShoppingCartOutlineRounded: typeof import('~icons/material-symbols/shopping-cart-outline-rounded').default
+  const IconMaterialSymbolsSupervisorAccount: typeof import('~icons/material-symbols/supervisor-account').default
 }

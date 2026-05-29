@@ -1,3 +1,5 @@
+@reference "@/style.css";
+
 .p-paginator {
     @apply flex items-center justify-center flex-wrap py-2 px-4 rounded-md gap-1
     bg-surface-0 dark:bg-surface-900 text-surface-700 dark:text-surface-0 text-sm
@@ -23,7 +25,7 @@
     @apply cursor-pointer inline-flex items-center justify-center leading-none overflow-hidden relative
     bg-surface-200/80 dark:bg-surface-800/80 border-none min-w-8 h-8 transition-colors duration-200
     rounded p-0 m-0.5 text-surface-500 dark:text-surface-400
-    focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary
+    focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-surface-500
 }
 
 .p-paginator-page:not(.p-disabled):not(.p-paginator-page-selected):hover,
