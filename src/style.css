@@ -1,0 +1,296 @@
+/* Use @import */
+@layer theme, base, components, utilities;
+@import "tailwindcss";
+@import "@/assets/primevue/tailwind.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@font-face {
+    font-family: 'Poppins';
+    src: url('@/assets/fonts/Poppins-Medium.eot');
+    src: url('@/assets/fonts/Poppins-Medium.eot?#iefix') format('embedded-opentype'),
+    url('@/assets/fonts/Poppins-Medium.woff') format('woff'),
+    url('@/assets/fonts/Poppins-Medium.ttf') format('truetype');
+}
+
+.html, body {
+    font: inherit;
+    font-size: 14px;
+    font-family: 'Poppins', Arial, serif;
+    font-weight: normal;
+    font-style: normal;
+}
+
+@theme {
+    --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+    --color-primary-50: #ecfdf5;
+    --color-primary-100: #d1fae5;
+    --color-primary-200: #a7f3d0;
+    --color-primary-300: #6ee7b7;
+    --color-primary-400: #34d399;
+    --color-primary-500: #10b981;
+    --color-primary-600: #059669;
+    --color-primary-700: #047857;
+    --color-primary-800: #065f46;
+    --color-primary-900: #064e3b;
+    --color-primary-950: #022c22;
+
+    --color-surface-0: #ffffff;
+    --color-surface-50: #fafafa;
+    --color-surface-100: #f4f4f5;
+    --color-surface-200: #e4e4e7;
+    --color-surface-300: #d4d4d8;
+    --color-surface-400: #a1a1aa;
+    --color-surface-500: #71717a;
+    --color-surface-600: #52525b;
+    --color-surface-700: #3f3f46;
+    --color-surface-800: #27272a;
+    --color-surface-900: #18181b;
+    --color-surface-950: #09090b;
+    --p-content-border-radius: 6px;
+    --p-popover-arrow-left: 10px;
+}
+
+@media (prefers-color-scheme: light) {
+    /* Light */
+    @theme {
+        --color-primary: var(--color-primary-500);
+        --color-primary-contrast: var(--color-surface-0);
+        --color-primary-hover-color: var(--color-primary-600);
+        --color-primary-active-color: var(--color-primary-700);
+        --p-content-border-color: var(--color-surface-200);
+        --p-content-hover-background: var(--color-surface-100);
+        --p-content-hover-color: var(--color-surface-800);
+        --color-highlight-background: var(--color-primary-50);
+        --color-highlight: var(--color-primary-700);
+        --color-emphasis: var(--color-primary-400);
+        --color-highlight-focus-background: var(--color-primary-100);
+        --color-highlight-focus-color: var(--color-primary-800);
+        --p-text-color: var(--color-surface-700);
+        --p-text-hover-color: var(--color-surface-800);
+        --p-text-muted-color: var(--color-surface-500);
+        --p-text-hover-muted-color: var(--color-surface-600);
+    }
+}
+
+/*
+ * Dark Mode
+ * Defaults to system, change the selector to match the darkMode in tailwind.config.
+ * For example;
+ * darkMode: ['selector', '[class*="app-dark"]']
+ * should be;
+ * :root[class="app-dark"] {
+*/
+@media (prefers-color-scheme: dark) {
+    @theme {
+        --color-primary-color: var(--color-primary-400);
+        --color-primary-contrast: var(--color-surface-900);
+        --color-contrast: var(--color-surface-900);
+        --color-primary-hover-color: var(--color-primary-300);
+        --color-primary-active-color: var(--color-primary-200);
+        --p-content-border-color: var(--color-surface-700);
+        --p-content-hover-background: var(--color-surface-800);
+        --p-content-hover-color: var(--color-surface-0);
+        --color-highlight-emphasis: var(--color-primary-500);
+        --p-highlight-background: color-mix(in srgb, var(--color-primary-400), transparent 84%);
+        --color-highlight: rgba(255, 255, 255, 0.87);
+        --p-highlight-focus-background: color-mix(in srgb, var(--color-primary-400), transparent 76%);
+        --p-highlight-focus-color: rgba(255, 255, 255, 0.87);
+        --p-text-color: var(--color-surface-0);
+        --p-text-hover-color: var(--color-surface-0);
+        --p-text-muted-color: var(--color-surface-400);
+        --p-text-hover-muted-color: var(--color-surface-300);
+    }
+}
+
+.clear-button-autocomplete {
+    @apply absolute right-12 bg-surface-100 dark:bg-surface-500 rounded top-2/3 transform -translate-y-1/2 cursor-pointer text-xl
+}
+
+.view-card-route {
+    @apply cursor-pointer flex flex-col items-center justify-center gap-2
+    rounded-xl border border-surface-400 dark:border-surface-600
+    bg-primary-100 dark:bg-surface-800 p-4 text-center shadow-md
+    hover:bg-primary-300 dark:hover:bg-surface-700 transition-all hover:scale-90
+}
+
+.show-task {
+    @apply flex items-center bg-surface-200 dark:bg-surface-800 hover:bg-surface-300 dark:hover:bg-surface-700
+    p-4 rounded-lg border border-surface-400 dark:border-surface-700 cursor-pointer transition-colors duration-300;
+}
+
+.mention {
+    @apply inline-block align-middle text-primary-600 dark:text-primary-300 shadow-sm rounded-xl text-sm py-0.5 px-2
+    m-0.5 bg-primary-200 dark:bg-primary-900/70;
+}
+
+.error-required {
+    @apply flex items-center text-sm text-red-500 mt-0.5 min-h-5;
+}
+
+.label-size {
+    @apply mb-1 block text-sm font-medium text-surface-900 dark:text-surface-200;
+}
+
+.app-label-config {
+    @apply my-1 text-xl font-semibold text-black dark:text-surface-0;
+}
+
+.align-item-config {
+    @apply inline-flex flex-col items-start justify-start;
+}
+
+.align-items-form {
+    @apply grid grid-cols-1 items-start justify-start gap-y-2 gap-x-2.5 md:grid-cols-12;
+}
+
+.align-header {
+    @apply flex flex-wrap items-center gap-1 sm:justify-between;
+}
+
+.align-buttons-submit {
+    @apply mt-4 flex items-center justify-center space-x-1;
+}
+
+.view-card {
+    @apply border rounded-lg border-surface-500 dark:border-surface-600 p-2
+}
+
+.view-card-time-line {
+    @apply border rounded-lg border-surface-500 dark:border-surface-600
+}
+
+/* padre */
+.header-style {
+    @apply sticky top-0 flex w-full justify-between gap-2 border-b p-2
+    border-surface-400 bg-surface-0 dark:border-surface-700 dark:bg-surface-900;
+}
+
+/* hijo (override) */
+.child-header {
+    @apply sticky top-0 flex w-full justify-between items-center gap-2
+}
+
+.max-cols-1 {
+    @apply col-span-1 md:col-span-1;
+}
+
+.max-cols-2 {
+    @apply col-span-1 md:col-span-2;
+}
+
+.max-cols-3 {
+    @apply col-span-1 md:col-span-3;
+}
+
+.max-cols-4 {
+    @apply col-span-1 md:col-span-4;
+}
+
+.max-cols-5 {
+    @apply col-span-1 md:col-span-5;
+}
+
+.max-cols-6 {
+    @apply col-span-1 md:col-span-6;
+}
+
+.max-cols-7 {
+    @apply col-span-1 md:col-span-7;
+}
+
+.max-cols-8 {
+    @apply col-span-1 md:col-span-8;
+}
+
+.max-cols-9 {
+    @apply col-span-1 md:col-span-9;
+}
+
+.max-cols-10 {
+    @apply col-span-1 md:col-span-10;
+}
+
+.max-cols-11 {
+    @apply col-span-1 md:col-span-11;
+}
+
+.max-cols-12 {
+    @apply col-span-1 md:col-span-12;
+}
+
+/* Works on Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+    @apply h-2 w-2;
+}
+
+*::-webkit-scrollbar-track {
+    @apply rounded-full
+}
+
+*::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-primary-500 dark:bg-surface-500;
+}
+
+*::-webkit-scrollbar-thumb:horizontal {
+    @apply h-2 rounded-full bg-primary-500 dark:bg-surface-500;
+}
+
+*::-webkit-scrollbar-corner {
+    @apply bg-transparent;
+}
+
+::selection {
+    @apply bg-primary-300/90 text-surface-900;
+}
+
+.dark ::selection {
+    @apply bg-primary-800 text-surface-100
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:invalid,
+input:-webkit-autofill:active {
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: var(--color-surface-950) !important;
+    transition: background-color 2000s ease-in-out 0s;
+    box-shadow: inset 0 0 20px 20px var(--color-surface-100); /* Fondo claro */
+}
+
+input {
+    @apply caret-primary-600;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active {
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: #e0e6ee !important; /* Forzar color claro */
+    transition: background-color 2000s ease-in-out 0s;
+    box-shadow: inset 0 0 20px 20px var(--color-surface-950); /* Fondo oscuro */
+}
+
+.dark input:-moz-ui-invalid, /* Firefox */
+.dark input:invalid {
+    color: #e0e6ee !important; /* Forzar color del texto */
+    text-decoration: none !important; /* Evitar subrayado rojo del navegador */
+}
+
+.v-enter-active,
+.v-leave-active {
+    transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+    opacity: 0;
+}
+
+.p-datepicker-panel {
+    min-width: auto !important;
+    max-width: 325px !important;
+    width: auto !important;
+}

@@ -1,0 +1,26 @@
+.p-card {
+    @apply flex flex-col rounded-xl
+    bg-surface-0 dark:bg-surface-900
+    text-surface-700 dark:text-surface-100/90 border border-surface-300 dark:border-surface-600
+    shadow-[0_4px_9px_0_rgba(0,0,0,0.1),0_4px_9px_-2px_rgba(0,0,0,0.1)]
+}
+
+.p-card-caption {
+    @apply px-4 py-2 flex flex-col bg-surface-50 dark:bg-surface-800 rounded-t-xl border-b border-b-surface-300 dark:border-b-surface-600
+}
+
+.p-card-body {
+    @apply flex flex-col gap-1
+}
+
+.p-card-title {
+    @apply font-semibold text-xl
+}
+
+.p-card-content {
+    @apply p-4
+}
+
+.p-card-subtitle {
+    @apply text-surface-500 dark:text-surface-400
+}
